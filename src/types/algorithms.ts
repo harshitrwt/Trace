@@ -1,5 +1,6 @@
-export type AlgorithmType = 'sorting' | 'searching' | 'pathfinding' | 'tree' | 'graph' | 'linear';
+import { create } from 'zustand';
 
+export type AlgorithmType = 'sorting' | 'searching' | 'pathfinding' | 'tree' | 'graph' | 'linear';
 export type AlgorithmSpeed = 'slow' | 'medium' | 'fast';
 
 export interface AlgorithmState {
@@ -13,14 +14,42 @@ export interface AlgorithmState {
   visualData: any[];
   pseudocode: string[];
   currentLine: number;
+  shouldFade: boolean; // <-- NEW
 }
 
-export interface ControlsProps {
-  onPlay: () => void;
-  onPause: () => void;
-  onReset: () => void;
-  onNextStep: () => void;
-  onPrevStep: () => void;
-  onSpeedChange: (speed: AlgorithmSpeed) => void;
-  state: AlgorithmState;
+export interface AlgorithmActions {
+  setPlaying: (isPlaying: boolean) => void;
+  setSpeed: (speed: AlgorithmSpeed) => void;
+  setStep: (step: number | ((prev: number) => number)) => void;
+  reset: () => void;
+  setShouldFade: (fade: boolean) => void; // <-- NEW
 }
+
+export const useAlgorithmStore = create<AlgorithmState & AlgorithmActions>((set) => ({
+  isPlaying: false,
+  speed: 'medium',
+  currentStep: 0,
+  totalSteps: 10,
+  algorithm: null,
+  type: null,
+  input: [],
+  visualData: [],
+  pseudocode: [],
+  currentLine: 0,
+  shouldFade: false, // <-- NEW
+
+  setPlaying: (isPlaying) => set({ isPlaying }),
+  setSpeed: (speed) => set({ speed }),
+  setStep: (step) =>
+    set((state) => ({
+      currentStep: typeof step === 'function' ? step(state.currentStep) : step,
+    })),
+  reset: () =>
+    set((state) => ({
+      currentStep: 0,
+      isPlaying: false,
+      currentLine: 0,
+      visualData: [...state.input], // reset visualData to original input if needed
+    })),
+  setShouldFade: (fade) => set({ shouldFade: fade }), // <-- NEW
+}));

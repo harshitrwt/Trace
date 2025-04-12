@@ -5,7 +5,7 @@ const CodeHighlighter: React.FC = () => {
   const { pseudocode, currentLine } = useAlgorithmStore();
 
   return (
-    <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
+    <div className="bg-gray-900 rounded-lg p-6 shadow-lg">
       <h2 className="text-xl font-semibold mb-4">Algorithm Steps</h2>
       <div className="font-mono text-sm">
         {pseudocode.length === 0 ? (

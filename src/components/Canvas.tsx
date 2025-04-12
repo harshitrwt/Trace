@@ -1,10 +1,10 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useAlgorithmStore } from '../store/algorithmStore';
 
 const Canvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { algorithm, type, visualData, currentStep } = useAlgorithmStore();
-
+  const [zoom, setZoom] = useState(1);
   // Color palette for visualization
   const colors = {
     default: '#60A5FA', // blue-400
@@ -35,30 +35,46 @@ const Canvas: React.FC = () => {
     window.addEventListener('resize', resizeCanvas);
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
 
     if (!algorithm || !type || currentStep >= visualData.length) {
+      // Apply zoom
+      const zoomCenterX = canvas.width / 2;
+      const zoomCenterY = canvas.height / 2;
+    
+      ctx.translate(zoomCenterX, zoomCenterY);
+      ctx.scale(zoom, zoom);
+      ctx.translate(-zoomCenterX, -zoomCenterY);
+    
+      // Draw message
       ctx.fillStyle = '#4B5563';
-      ctx.font = '16px system-ui';
+      ctx.font = `${16 / zoom}px system-ui`; // Adjust font size for zoom
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(
-        'Select an algorithm ',
+        'Select an algorithm',
         canvas.width / 2,
         canvas.height / 2
       );
+    
       return;
     }
+    
 
     const frame = visualData[currentStep];
     if (frame) {
       drawVisualization(ctx, frame, type);
     }
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.scale(zoom, zoom);
+  ctx.translate(-canvas.width / 2, -canvas.height / 2);
 
     return () => {
       window.removeEventListener('resize', resizeCanvas);
     };
   }, [algorithm, type, visualData, currentStep]);
 
+  
   const drawVisualization = (
     ctx: CanvasRenderingContext2D,
     frame: any,
@@ -346,11 +362,13 @@ const Canvas: React.FC = () => {
   };
 
   return (
-    <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
+    <div className="bg-blue-600 rounded-lg p-2 shadow-lg">
       <canvas
         ref={canvasRef}
         className="w-full rounded-lg bg-gray-900"
       />
+      
+      
     </div>
   );
 };

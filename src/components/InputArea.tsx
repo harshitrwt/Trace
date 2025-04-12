@@ -700,7 +700,7 @@ const InputArea: React.FC = () => {
   };
 
   return (
-    <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
+    <div className="bg-gray-900 rounded-lg p-6 shadow-lg">
       <h2 className="text-xl font-semibold mb-4">Input Area</h2>
       <div className="space-y-4">
         <textarea

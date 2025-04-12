@@ -21,8 +21,8 @@ const ControlPanel: React.FC = () => {
   };
 
   return (
-    <div className="bg-gray-800 rounded-lg p-6">
-      <div className="flex items-center justify-between ml-14 md:ml-0">
+    <div className="bg-gray-900 rounded-lg p-6">
+      <div className="flex items-center justify-between ml-12 md:ml-0">
         <div className="flex space-x-4">
           <motion.button
             whileHover={{ scale: 1.1 }}
