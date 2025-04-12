@@ -156,8 +156,19 @@ const InputArea: React.FC = () => {
         return 'Enter grid using S(start), G(goal), #(wall), .(path)\nExample:\nS.#..\n.#...\n..#.G';
       case 'tree':
         return 'Enter numbers for tree nodes (e.g., 5, 3, 7, 1, 4, 6, 8)';
-      case 'graph':
-        return 'Enter edges as: fromNode, toNode, weight\nExample:\n1, 2, 4\n2, 3, 2\n1, 3, 5';
+        case 'graph':
+          return `Enter graph edges in the format: fromNode, toNode, weight
+        Each line should represent one edge.
+        
+        Example:
+        0, 1, 4
+        1, 2, 2
+        0, 2, 5
+        
+        Note:
+        - Nodes are represented by numbers (e.g., 0, 1, 2).
+        - Edges must include weights for Kruskal's Algorithm.
+        - Ensure there are no duplicate edges or self-loops.`;
       case 'linear':
         return 'Enter values separated by commas (e.g., A, B, C, D)';
       default:
@@ -636,12 +647,63 @@ const InputArea: React.FC = () => {
           '    add edge to MST',
           '    union sets of u and v'
         ];
-
-        const edges = [...data];
-        // Implementation would go here
+      
+        type Edge = { u: number; v: number; weight: number };
+        const edges: Edge[] = [...data]; // expects [{u: 0, v: 1, weight: 10}, ...]
+      
+        const parent: number[] = [];
+        const find = (u: number): number => {
+          if (parent[u] !== u) {
+            parent[u] = find(parent[u]); // Path compression
+          }
+          return parent[u];
+        };
+      
+        const union = (u: number, v: number) => {
+          const pu = find(u);
+          const pv = find(v);
+          if (pu !== pv) {
+            parent[pu] = pv;
+          }
+        };
+      
+        // Step 1: Sort edges by weight
+        edges.sort((a, b) => a.weight - b.weight);
+      
+        // Step 2: Initialize disjoint sets
+        const nodes = new Set<number>();
+        edges.forEach(edge => {
+          nodes.add(edge.u);
+          nodes.add(edge.v);
+        });
+      
+        for (const node of nodes) {
+          parent[node] = node;
+        }
+      
+        const mst: Edge[] = [];
+        for (const edge of edges) {
+          const { u, v, weight } = edge;
+      
+          const rootU = find(u);
+          const rootV = find(v);
+      
+          // Step 3: If they belong to different sets, union them
+          if (rootU !== rootV) {
+            union(u, v);
+            mst.push(edge);
+      
+            visualData.push({
+              mst: [...mst], // Current MST
+              edge: { ...edge }, // Currently added edge
+              disjointSet: [...parent], // Disjoint set status
+            });
+          }
+        }
+      
         break;
       }
-
+      
       case "Prim's Algorithm": {
         pseudocode = [
           'Start with vertex 0',
@@ -701,7 +763,8 @@ const InputArea: React.FC = () => {
 
   return (
     <div className="bg-gray-900 rounded-lg p-6 shadow-lg">
-      <h2 className="text-xl font-semibold mb-4">Input Area</h2>
+      <h2 className="text-xl font-semibold mb-1">Inputs </h2>
+      <span className='text-sm font-light hidden md:block mb-3 text-gray-500'>After selecting an Algo, follow the approach mentioned inside the area below to enter inputs the correct way</span>
       <div className="space-y-4">
         <textarea
           value={input}

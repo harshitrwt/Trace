@@ -4,8 +4,7 @@ import { useAlgorithmStore } from '../store/algorithmStore';
 const Canvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { algorithm, type, visualData, currentStep } = useAlgorithmStore();
-  const [zoom, setZoom] = useState(1);
-  // Color palette for visualization
+
   const colors = {
     default: '#60A5FA', // blue-400
     comparing: '#F59E0B', // yellow-500
@@ -43,12 +42,12 @@ const Canvas: React.FC = () => {
       const zoomCenterY = canvas.height / 2;
     
       ctx.translate(zoomCenterX, zoomCenterY);
-      ctx.scale(zoom, zoom);
+      
       ctx.translate(-zoomCenterX, -zoomCenterY);
     
       // Draw message
       ctx.fillStyle = '#4B5563';
-      ctx.font = `${16 / zoom}px system-ui`; // Adjust font size for zoom
+      ctx.font = `${16}px system-ui`; // Adjust font size for zoom
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(
@@ -66,7 +65,7 @@ const Canvas: React.FC = () => {
       drawVisualization(ctx, frame, type);
     }
     ctx.translate(canvas.width / 2, canvas.height / 2);
-  ctx.scale(zoom, zoom);
+  
   ctx.translate(-canvas.width / 2, -canvas.height / 2);
 
     return () => {
@@ -274,45 +273,53 @@ const Canvas: React.FC = () => {
   };
 
   const drawGraphVisualization = (ctx: CanvasRenderingContext2D, frame: any) => {
-    const { nodes, edges, visited, current } = frame;
-    if (!nodes) return;
-
+    const { nodes, edges, visited = [], current = null } = frame;
+    if (!nodes || !edges) return;
+  
     const nodeRadius = 20;
     const width = ctx.canvas.width;
     const height = ctx.canvas.height;
-
+  
+    ctx.clearRect(0, 0, width, height);
+  
     // Draw edges
-    edges?.forEach((edge: any) => {
+    edges.forEach((edge: any) => {
       const startNode = nodes[edge.from];
       const endNode = nodes[edge.to];
-      
+  
       ctx.beginPath();
       ctx.moveTo(startNode.x * width, startNode.y * height);
       ctx.lineTo(endNode.x * width, endNode.y * height);
+      
       ctx.strokeStyle = edge.selected ? colors.path : colors.default;
+      ctx.lineWidth = edge.selected ? 3 : 1;
       ctx.stroke();
-
-      // Draw weight
+  
+      // Draw weight at midpoint
       const midX = (startNode.x + endNode.x) * width / 2;
       const midY = (startNode.y + endNode.y) * height / 2;
       ctx.fillStyle = colors.text;
       ctx.font = '12px system-ui';
       ctx.fillText(edge.weight.toString(), midX, midY);
     });
-
+  
     // Draw nodes
     nodes.forEach((node: any, index: number) => {
       ctx.beginPath();
       ctx.arc(node.x * width, node.y * height, nodeRadius, 0, Math.PI * 2);
-      
-      ctx.fillStyle = colors.default;
-      if (visited?.includes(index)) ctx.fillStyle = colors.visited;
-      if (current === index) ctx.fillStyle = colors.current;
-      
+  
+      if (current === index) {
+        ctx.fillStyle = colors.current;
+      } else if (visited.includes(index)) {
+        ctx.fillStyle = colors.visited;
+      } else {
+        ctx.fillStyle = colors.default;
+      }
+  
       ctx.fill();
       ctx.stroke();
-
-      // Draw node value
+  
+      // Draw node label (number)
       ctx.fillStyle = colors.text;
       ctx.font = '14px system-ui';
       ctx.textAlign = 'center';
@@ -320,6 +327,7 @@ const Canvas: React.FC = () => {
       ctx.fillText(index.toString(), node.x * width, node.y * height);
     });
   };
+  
 
   const drawLinearVisualization = (ctx: CanvasRenderingContext2D, frame: any) => {
     const { stack, queue, current, operation } = frame;
