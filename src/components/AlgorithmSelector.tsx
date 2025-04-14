@@ -47,17 +47,20 @@ const AlgorithmSelector: React.FC = () => {
             <h3 className="text-lg font-medium capitalize text-white">{type}</h3>
             {algs.map((alg) => (
               <motion.button
-                key={alg}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={`w-full px-4 py-2 rounded ${
-                  selectedAlgorithm === alg ? 'bg-blue-600' : 'bg-gray-700'
-                } hover:bg-gray-600 text-white transition-colors flex justify-between items-center`}
-                onClick={() => handleSelectAlgorithm(alg, type)}
-              >
-                <span>{alg}</span>
-                <span className="text-blue-600">◉</span>
-              </motion.button>
+              key={alg}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className={`w-full px-4 py-2 rounded ${
+                selectedAlgorithm === alg ? 'bg-blue-600' : 'bg-gray-700'
+              } hover:bg-blue-600 text-white transition-colors flex justify-between items-center`}
+              onClick={() => {
+                
+                setSelectedAlgorithm(alg);
+                handleSelectAlgorithm(alg, type); 
+              }}
+            >
+              <span>{alg}</span>
+            </motion.button>
             ))}
           </div>
         ))}

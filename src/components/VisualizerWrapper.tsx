@@ -40,7 +40,6 @@ import AIExplanationPanel from './AiPanel';
     const timer = setTimeout(() => {
       if (window.innerWidth < 768) {
         setShowPopup(true);
-        // Start the animation after mount
         setTimeout(() => setAnimate(true), 50);
       }
     }, 5000);
@@ -49,8 +48,8 @@ import AIExplanationPanel from './AiPanel';
   }, []);
 
   const handleClose = () => {
-    setAnimate(false); // animate out (optional)
-    setTimeout(() => setShowPopup(false), 3000); // delay unmount
+    setAnimate(false); 
+    setTimeout(() => setShowPopup(false), 3000); 
   };
   
   
@@ -76,10 +75,10 @@ import AIExplanationPanel from './AiPanel';
       )}
     </div>
 
-        {/* StarField as the background */}
+        
         <StarField />
   
-        {/* Main content */}
+        
         <div className="relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -112,8 +111,8 @@ import AIExplanationPanel from './AiPanel';
             </nav>
   
             {/* Small screen InputArea (above Canvas) */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3">
+              <div className="lg:col-span-2 space-y-6 ">
                 <AlgorithmSelector />
   
                 <div className="lg:hidden mb-6">
