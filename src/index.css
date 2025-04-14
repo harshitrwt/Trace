@@ -7,3 +7,17 @@
 body {
     @apply font-exo;
   }
+
+  .custom-toast {
+    background-color: #111827; /* bg-gray-900 equivalent */
+  }
+
+  .toastify-toast-success {
+    background-color: #104dc6; /* bg-gray-900 equivalent */
+  }
+  
+  
+  .custom-toast .toastify-icon {
+    color: #2d30d7 !important; /* Blue color for the tick */
+  }
+  

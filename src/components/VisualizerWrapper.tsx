@@ -104,7 +104,7 @@ import AIExplanationPanel from './AiPanel';
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <div className="mt-3 sm:mt-0 bg-blue-600 text-white-600 rounded-md px-3 py-1 text-sm sm:text-base font-medium shadow-2xl border border-black">
+                <div className="mt-2 sm:mt-0 bg-blue-600 text-white-600 rounded-md px-3 py-1 text-sm sm:text-base font-medium shadow-2xl border border-black">
                   ⭐ {stars}
                   <span className="hidden md:block">Stars</span>
                 </div>
@@ -119,8 +119,6 @@ import AIExplanationPanel from './AiPanel';
                 <div className="lg:hidden mb-6">
                   <InputArea />
                 </div>
-  
-                {/* Canvas stays in its place, but InputArea is only above it on mobile */}
                 <Canvas />
   
                 <ControlPanel />
