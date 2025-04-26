@@ -3,6 +3,7 @@ import { useAlgorithmStore } from '../store/algorithmStore';
 
 const Canvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [zoom, setZoom] = useState(1);
   const { algorithm, type, visualData, currentStep } = useAlgorithmStore();
 
   const colors = {
@@ -16,38 +17,37 @@ const Canvas: React.FC = () => {
     text: '#F3F4F6', // gray-100
   };
 
+  
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
+  
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-
+  
     const resizeCanvas = () => {
       const container = canvas.parentElement;
       if (!container) return;
       canvas.width = container.clientWidth * 0.7;
       canvas.height = Math.min(container.clientWidth * 0.6, 400);
     };
-
+  
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
-
+  
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-
+    ctx.setTransform(zoom, 0, 0, zoom, 0, 0); // <-- FIXED HERE!
+  
     if (!algorithm || !type || currentStep >= visualData.length) {
-      // Apply zoom
       const zoomCenterX = canvas.width / 2;
       const zoomCenterY = canvas.height / 2;
-    
+  
       ctx.translate(zoomCenterX, zoomCenterY);
-      
       ctx.translate(-zoomCenterX, -zoomCenterY);
-    
-      // Draw message
+  
       ctx.fillStyle = '#4B5563';
-      ctx.font = `${16}px system-ui`; // Adjust font size for zoom
+      ctx.font = `${16}px system-ui`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(
@@ -55,23 +55,22 @@ const Canvas: React.FC = () => {
         canvas.width / 2,
         canvas.height / 2
       );
-    
       return;
     }
-    
-
+  
     const frame = visualData[currentStep];
     if (frame) {
       drawVisualization(ctx, frame, type);
     }
-    ctx.translate(canvas.width / 2, canvas.height / 2);
   
-  ctx.translate(-canvas.width / 2, -canvas.height / 2);
-
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.translate(-canvas.width / 2, -canvas.height / 2);
+  
     return () => {
       window.removeEventListener('resize', resizeCanvas);
     };
-  }, [algorithm, type, visualData, currentStep]);
+  }, [algorithm, type, visualData, currentStep, zoom]); // <-- Don't forget to add zoom in dependencies
+  
 
   
   const drawVisualization = (
@@ -282,6 +281,10 @@ const Canvas: React.FC = () => {
   
     ctx.clearRect(0, 0, width, height);
   
+    // Apply zoom effect
+    ctx.save(); // Save the current context state
+    ctx.scale(zoom, zoom); // Scale the canvas based on the zoom level
+  
     // Draw edges
     edges.forEach((edge: any) => {
       const startNode = nodes[edge.from];
@@ -290,7 +293,7 @@ const Canvas: React.FC = () => {
       ctx.beginPath();
       ctx.moveTo(startNode.x * width, startNode.y * height);
       ctx.lineTo(endNode.x * width, endNode.y * height);
-      
+  
       ctx.strokeStyle = edge.selected ? colors.path : colors.default;
       ctx.lineWidth = edge.selected ? 3 : 1;
       ctx.stroke();
@@ -326,6 +329,8 @@ const Canvas: React.FC = () => {
       ctx.textBaseline = 'middle';
       ctx.fillText(index.toString(), node.x * width, node.y * height);
     });
+  
+    ctx.restore(); // Restore the context state
   };
   
 
@@ -375,6 +380,22 @@ const Canvas: React.FC = () => {
         ref={canvasRef}
         className="w-full rounded-lg bg-gray-900"
       />
+      {type === 'graph' && (
+      <div className="absolute bottom-4 right-4 flex flex-col space-y-2">
+      <button
+        className="p-2 bg-blue-500 text-white rounded-full shadow hover:bg-blue-600"
+        onClick={() => setZoom((prev) => Math.min(prev + 0.1, 2))} // Max zoom level: 2
+      >
+        +
+      </button>
+      <button
+        className="p-2 bg-blue-500 text-white rounded-full shadow hover:bg-blue-600"
+        onClick={() => setZoom((prev) => Math.max(prev - 0.1, 0.5))} // Min zoom level: 0.5
+      >
+        −
+      </button>
+    </div>
+  )}
       
       
     </div>

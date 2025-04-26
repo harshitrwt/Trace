@@ -6,7 +6,7 @@ interface AlgorithmStore extends AlgorithmState {
   setInput: (input: any[]) => void;
   setPlaying: (isPlaying: boolean) => void;
   setSpeed: (speed: AlgorithmSpeed) => void;
-  setStep: (step: number) => void;
+  setStep: (step: number | ((currentStep: number) => number)) => void;
   reset: () => void;
 }
 
@@ -21,6 +21,7 @@ const initialState: AlgorithmState = {
   visualData: [],
   pseudocode: [],
   currentLine: 0,
+  shouldFade: false
 };
 
 export const useAlgorithmStore = create<AlgorithmStore>((set) => ({
@@ -29,6 +30,9 @@ export const useAlgorithmStore = create<AlgorithmStore>((set) => ({
   setInput: (input) => set({ input }),
   setPlaying: (isPlaying) => set({ isPlaying }),
   setSpeed: (speed) => set({ speed }),
-  setStep: (step) => set({ currentStep: step }),
+  setStep: (step) =>
+    set((state) => ({
+      currentStep: typeof step === 'function' ? step(state.currentStep) : step,
+    })),  
   reset: () => set(initialState),
 }));

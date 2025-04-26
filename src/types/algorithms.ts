@@ -14,7 +14,7 @@ export interface AlgorithmState {
   visualData: any[];
   pseudocode: string[];
   currentLine: number;
-  shouldFade: boolean; // <-- NEW
+  shouldFade: boolean; 
 }
 
 export interface AlgorithmActions {

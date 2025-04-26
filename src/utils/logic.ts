@@ -17,6 +17,6 @@ export const getGeminiExplanation = async (algorithm: string, step: number, data
     return response.text();
   } catch (err) {
     console.error('Gemini error:', err);
-    return 'AI explanation unavailable right now. Please try again later.';
+    return 'AI explanation coming Soon. Please Try later...';
   }
 };
