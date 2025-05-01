@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const algorithms = {
-  sorting: ['Bubble Sort', 'Quick Sort', 'Merge Sort'],
+  sorting: ['Bubble Sort', 'Quick Sort', 'Merge Sort', 'Insertion Sort', 'Selection Sort'],
   searching: ['Binary Search', 'Linear Search'],
   dynamic: ['Fibonacci', 'Knapsack Problem'],
   backtracking: ['N-Queens Problem', 'Sudoku Solver'],
@@ -15,6 +15,8 @@ const algorithms = {
   graph: ["Kruskal's Algorithm", "Prim's Algorithm"],
   linear: ['Stack Operations', 'Queue Operations'],
 };
+
+const underDevelopmentTypes = ['dynamic', 'backtracking', 'graph'];
 
 const AlgorithmSelector: React.FC = () => {
   const { setAlgorithm } = useAlgorithmStore();
@@ -31,9 +33,8 @@ const AlgorithmSelector: React.FC = () => {
       closeOnClick: true,
       pauseOnHover: true,
       draggable: true,
-      className: 'custom-toast ', 
+      className: 'custom-toast',
     });
-    
   };
 
   return (
@@ -47,20 +48,28 @@ const AlgorithmSelector: React.FC = () => {
             <h3 className="text-lg font-medium capitalize text-white">{type}</h3>
             {algs.map((alg) => (
               <motion.button
-              key={alg}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className={`w-full px-4 py-2 rounded ${
-                selectedAlgorithm === alg ? 'bg-blue-600' : 'bg-gray-700'
-              } hover:bg-blue-600 text-white transition-colors flex justify-between items-center`}
-              onClick={() => {
-                
-                setSelectedAlgorithm(alg);
-                handleSelectAlgorithm(alg, type); 
-              }}
-            >
-              <span>{alg}</span>
-            </motion.button>
+                key={alg}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`w-full px-4 py-2 rounded relative ${
+                  selectedAlgorithm === alg ? 'bg-blue-600' : 'bg-gray-700'
+                } ${
+                  underDevelopmentTypes.includes(type)
+                    ? 'hover:bg-red-600'
+                    : 'hover:bg-blue-600'
+                } text-white transition-colors flex justify-between items-center group`}
+                onClick={() => {
+                  setSelectedAlgorithm(alg);
+                  handleSelectAlgorithm(alg, type);
+                }}
+              >
+                <span>{alg}</span>
+                {underDevelopmentTypes.includes(type) && (
+                  <span className="absolute -top-6 right-0 text-xs text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                    Under development
+                  </span>
+                )}
+              </motion.button>
             ))}
           </div>
         ))}
@@ -80,10 +89,10 @@ const AlgorithmSelector: React.FC = () => {
             <AnimatePresence>
               {openCategory === type && (
                 <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.5 }}
+                  initial={{ maxHeight: 0, opacity: 0 }}
+                  animate={{ maxHeight: 500, opacity: 1 }}
+                  exit={{ maxHeight: 0, opacity: 0 }}
+                  transition={{ duration: 0.3, ease: 'easeIn'}}
                   className="px-4 py-2 space-y-2 overflow-hidden"
                 >
                   {algs.map((alg) => (
@@ -91,12 +100,21 @@ const AlgorithmSelector: React.FC = () => {
                       key={alg}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className={`w-full text-left px-4 py-2 rounded ${
+                      className={`w-full text-left px-4 py-2 rounded relative ${
                         selectedAlgorithm === alg ? 'bg-blue-600' : 'bg-gray-600'
-                      } hover:bg-gray-500 text-white transition-colors`}
+                      } ${
+                        underDevelopmentTypes.includes(type)
+                          ? 'hover:bg-red-600'
+                          : 'hover:bg-gray-500'
+                      } text-white transition-colors group`}
                       onClick={() => handleSelectAlgorithm(alg, type)}
                     >
                       {alg}
+                      {underDevelopmentTypes.includes(type) && (
+                        <span className="absolute -top-5 right-2 text-xs text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                          Under development
+                        </span>
+                      )}
                     </motion.button>
                   ))}
                 </motion.div>

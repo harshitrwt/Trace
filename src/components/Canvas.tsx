@@ -15,6 +15,7 @@ const Canvas: React.FC = () => {
     wall: '#1F2937', // gray-800
     path: '#34D399', // emerald-400
     text: '#F3F4F6', // gray-100
+    notFound: 'red',
   };
 
   
@@ -103,81 +104,93 @@ const Canvas: React.FC = () => {
   };
 
   const drawSortingVisualization = (ctx: CanvasRenderingContext2D, frame: any) => {
-    const { array, comparing, swapping } = frame;
+    const { array, comparing = [], swapping = [] } = frame;
     const padding = 40;
     const availableWidth = ctx.canvas.width - 2 * padding;
     const availableHeight = ctx.canvas.height - 2 * padding;
     const barWidth = availableWidth / array.length;
     const maxValue = Math.max(...array);
-    
+  
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); // Clear previous frame
+  
     array.forEach((value: number, index: number) => {
       const height = (value / maxValue) * availableHeight;
       const x = padding + index * barWidth;
       const y = ctx.canvas.height - padding - height;
-      
-      // Determine bar color based on state
+  
       ctx.fillStyle = colors.default;
       if (comparing.includes(index)) ctx.fillStyle = colors.comparing;
       if (swapping.includes(index)) ctx.fillStyle = colors.swapping;
-      
-      // Draw bar
+  
       ctx.fillRect(x, y, barWidth - 2, height);
-      
-      // Draw value text
+  
       ctx.fillStyle = colors.text;
       ctx.font = '12px system-ui';
       ctx.textAlign = 'center';
       ctx.fillText(value.toString(), x + barWidth / 2, y - 5);
     });
   };
-
-  // Add this function below the existing visualization functions
+  
 
   const drawSearchingVisualization = (ctx: CanvasRenderingContext2D, frame: any) => {
-    const { array, current, target, found, low, high, mid } = frame;
+    const { array, current, target, found, low, high, mid, done } = frame;
     const padding = 40;
     const availableWidth = ctx.canvas.width - 2 * padding;
     const availableHeight = ctx.canvas.height - 2 * padding;
     const barWidth = availableWidth / array.length;
     const maxValue = Math.max(...array);
   
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); // Clear canvas each frame
+  
     array.forEach((value: number, index: number) => {
       const height = (value / maxValue) * availableHeight;
       const x = padding + index * barWidth;
       const y = ctx.canvas.height - padding - height;
   
-      // Determine bar color based on state
+      // Set default color
       ctx.fillStyle = colors.default;
-      if (low !== undefined && high !== undefined && mid !== undefined) {
-        // Binary Search visualization
-        if (index === mid) ctx.fillStyle = colors.current; // Highlight the mid index
-        if (index >= low && index <= high) ctx.fillStyle = colors.visited; // Highlight the search range
-      } else {
-        // Linear Search visualization
-        if (index === current) ctx.fillStyle = colors.current; // Highlight the current index
-      }
-      if (value === target && found) ctx.fillStyle = colors.swapping; // Highlight the found target
   
-      // Draw bar
+      if (low !== undefined && high !== undefined && mid !== undefined) {
+        // Binary Search Visualization
+        if (index >= low && index <= high) ctx.fillStyle = colors.visited;       // Search range
+        if (index === mid) ctx.fillStyle = colors.current;                       // Mid index
+      } else if (current !== undefined) {
+        // Linear Search Visualization
+        if (index === current) ctx.fillStyle = colors.current;                   // Currently checking
+      }
+  
+      if (value === target && found) {
+        ctx.fillStyle = colors.swapping; // Target found highlight
+      }
+  
       ctx.fillRect(x, y, barWidth - 2, height);
   
-      // Draw value text
+      // Draw value label
       ctx.fillStyle = colors.text;
       ctx.font = '12px system-ui';
       ctx.textAlign = 'center';
       ctx.fillText(value.toString(), x + barWidth / 2, y - 5);
     });
   
-    // Display target value
+    // Display Target Info
     ctx.fillStyle = colors.text;
     ctx.font = '16px system-ui';
     ctx.textAlign = 'center';
-    ctx.fillText(
-      `Target: ${target}`,
-      ctx.canvas.width / 2,
-      ctx.canvas.height - padding / 2
-    );
+    ctx.fillText(`Target: ${target}`, ctx.canvas.width / 2, padding / 2);
+  
+    // Show Result Text
+    if (done) {
+      ctx.font = '20px system-ui';
+      ctx.fillStyle = found ? colors.swapping : colors.notFound;
+      ctx.fillText(
+        found ? `🎯 Target Found: ${target}` : '❌ Target Not Found',
+        ctx.canvas.width / 2,
+        ctx.canvas.height - padding / 2
+      );
+    }
   };
+  
+  
 
   const drawPathfindingVisualization = (ctx: CanvasRenderingContext2D, frame: any) => {
     const { grid, visited, current, path } = frame;

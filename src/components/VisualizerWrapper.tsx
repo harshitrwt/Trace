@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import { motion } from 'framer-motion';
 import { useAlgorithmStore } from '../store/algorithmStore';
 import AlgorithmSelector from './AlgorithmSelector';
@@ -17,6 +17,7 @@ import AIExplanationPanel from './AiPanel';
   // Replace with your actual GitHub repo
   const owner = "harshitrwt";
   const repo = "Trace";
+
   
 
 
@@ -49,6 +50,7 @@ import AIExplanationPanel from './AiPanel';
 
     return () => clearTimeout(timer);
   }, []);
+  
 
   const handleClose = () => {
     setAnimate(false); 

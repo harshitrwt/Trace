@@ -1,16 +1,23 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useAlgorithmStore } from '../store/algorithmStore';
 
 const InputArea: React.FC = () => {
   const [input, setInput] = useState('');
+  const [selectedAlgo, setSelectedAlgo] = useState('');
   const { type, algorithm, setInput: setStoreInput } = useAlgorithmStore();
   let processedInput: any[] | { array: number[]; target: number } = [];
+  
+
+  
+  
+
   const processInput = () => {
     if (!type || !algorithm) {
       alert('Please select an algorithm first');
       return;
     }
   
+
     try {
       let processedInput: any[] | { array: number[]; target: number } = [];
       
@@ -252,51 +259,145 @@ const InputArea: React.FC = () => {
         const arr = [...data];
         pseudocode = [
           'function mergeSort(arr)',
-          '  if length of arr <= 1',
-          '    return arr',
-          '  mid = length of arr / 2',
-          '  left = mergeSort(arr[0...mid])',
-          '  right = mergeSort(arr[mid...end])',
+          '  if length <= 1 return arr',
+          '  mid = arr.length / 2',
+          '  left = mergeSort(arr[0..mid])',
+          '  right = mergeSort(arr[mid..end])',
           '  return merge(left, right)'
         ];
-
-        const merge = (left: number[], right: number[]) => {
-          const result: number[] = [];
+      
+        const mergeSort = (arr: number[], leftIndex = 0): number[] => {
+          if (arr.length <= 1) return arr;
+      
+          const mid = Math.floor(arr.length / 2);
+          const left = mergeSort(arr.slice(0, mid), leftIndex);
+          const right = mergeSort(arr.slice(mid), leftIndex + mid);
+      
+          return merge(left, right, leftIndex);
+        };
+      
+        const merge = (left: number[], right: number[], start: number): number[] => {
+          const merged: number[] = [];
           let i = 0, j = 0;
-
+      
           while (i < left.length && j < right.length) {
-            visualData.push({ 
-              array: [...result, ...left.slice(i), ...right.slice(j)],
-              comparing: [i, left.length + j],
+            const comparing = [start + i, start + left.length + j];
+            visualData.push({
+              array: [...data],
+              comparing,
               swapping: []
             });
-
+      
             if (left[i] <= right[j]) {
-              result.push(left[i]);
+              merged.push(left[i]);
+              data[start + merged.length - 1] = left[i];
               i++;
             } else {
-              result.push(right[j]);
+              merged.push(right[j]);
+              data[start + merged.length - 1] = right[j];
               j++;
             }
+      
+            visualData.push({
+              array: [...data],
+              comparing: [],
+              swapping: [start + merged.length - 1]
+            });
           }
-
-          return [...result, ...left.slice(i), ...right.slice(j)];
+      
+          while (i < left.length) {
+            merged.push(left[i]);
+            data[start + merged.length - 1] = left[i];
+            visualData.push({
+              array: [...data],
+              comparing: [],
+              swapping: [start + merged.length - 1]
+            });
+            i++;
+          }
+      
+          while (j < right.length) {
+            merged.push(right[j]);
+            data[start + merged.length - 1] = right[j];
+            visualData.push({
+              array: [...data],
+              comparing: [],
+              swapping: [start + merged.length - 1]
+            });
+            j++;
+          }
+      
+          return merged;
         };
-
-        const mergeSort = (arr: number[]): number[] => {
-          if (arr.length <= 1) return arr;
-
-          const mid = Math.floor(arr.length / 2);
-          const left = mergeSort(arr.slice(0, mid));
-          const right = mergeSort(arr.slice(mid));
-
-          return merge(left, right);
-        };
-
+      
         visualData.push({ array: [...arr], comparing: [], swapping: [] });
         mergeSort(arr);
         break;
       }
+      case 'Insertion Sort': {
+        const arr = [...data];
+        pseudocode = [
+          'for i from 1 to n-1',
+          '  key = arr[i]',
+          '  j = i - 1',
+          '  while j >= 0 and arr[j] > key',
+          '    arr[j + 1] = arr[j]',
+          '    j = j - 1',
+          '  arr[j + 1] = key'
+        ];
+      
+        visualData.push({ array: [...arr], comparing: [], swapping: [] });
+      
+        for (let i = 1; i < arr.length; i++) {
+          let key = arr[i];
+          let j = i - 1;
+      
+          while (j >= 0 && arr[j] > key) {
+            visualData.push({ array: [...arr], comparing: [j, j + 1], swapping: [] });
+            arr[j + 1] = arr[j];
+            visualData.push({ array: [...arr], comparing: [], swapping: [j, j + 1] });
+            j--;
+          }
+          arr[j + 1] = key;
+          visualData.push({ array: [...arr], comparing: [], swapping: [j + 1] });
+        }
+      
+        break;
+      }
+      
+      case 'Selection Sort': {
+        const arr = [...data];
+        pseudocode = [
+          'for i from 0 to n-1',
+          '  minIndex = i',
+          '  for j from i+1 to n',
+          '    if arr[j] < arr[minIndex]',
+          '      minIndex = j',
+          '  swap arr[i] and arr[minIndex]'
+        ];
+      
+        visualData.push({ array: [...arr], comparing: [], swapping: [] });
+      
+        for (let i = 0; i < arr.length; i++) {
+          let minIndex = i;
+      
+          for (let j = i + 1; j < arr.length; j++) {
+            visualData.push({ array: [...arr], comparing: [minIndex, j], swapping: [] });
+            if (arr[j] < arr[minIndex]) {
+              minIndex = j;
+            }
+          }
+      
+          if (minIndex !== i) {
+            [arr[i], arr[minIndex]] = [arr[minIndex], arr[i]];
+            visualData.push({ array: [...arr], comparing: [], swapping: [i, minIndex] });
+          }
+        }
+      
+        break;
+      }
+      
+      
       case 'Linear Search': {
         const { array, target } = data[0]; // Extract array and target from input
         pseudocode = [
@@ -342,24 +443,48 @@ const InputArea: React.FC = () => {
       
         while (low <= high) {
           const mid = Math.floor((low + high) / 2);
-      
+        
           visualData.push({
             array: [...array],
             low,
             high,
             mid,
             target,
-            found: array[mid] === target
+            found: array[mid] === target,
+            done: false
           });
-      
+        
           if (array[mid] === target) {
-            break; // Stop visualization once the target is found
+            // Final frame indicating found
+            visualData.push({
+              array: [...array],
+              low,
+              high,
+              mid,
+              target,
+              found: true,
+              done: true
+            });
+            break;
           } else if (array[mid] < target) {
             low = mid + 1;
           } else {
             high = mid - 1;
           }
         }
+        
+        // If not found, push one final frame
+        if (low > high) {
+          visualData.push({
+            array: [...array],
+            low,
+            high,
+            mid: -1,
+            target,
+            found: false,
+            done: true
+          });
+        }        
       
         break;
       }
@@ -654,7 +779,7 @@ const InputArea: React.FC = () => {
         const parent: number[] = [];
         const find = (u: number): number => {
           if (parent[u] !== u) {
-            parent[u] = find(parent[u]); // Path compression
+            parent[u] = find(parent[u]); 
           }
           return parent[u];
         };
@@ -761,6 +886,8 @@ const InputArea: React.FC = () => {
     });
   };
 
+  
+  
   return (
     <div className="bg-gray-900 rounded-lg p-6 shadow-lg">
       <h2 className="text-xl font-semibold mb-1">Inputs </h2>
@@ -785,3 +912,7 @@ const InputArea: React.FC = () => {
 };
 
 export default InputArea;
+
+
+
+
