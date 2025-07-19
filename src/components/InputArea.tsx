@@ -19,7 +19,7 @@ const InputArea: React.FC = () => {
   
 
     try {
-      let processedInput: any[] | { array: number[]; target: number } = [];
+      let processedInput: any[] | { array: number[]; target: number }  | { nodes: string[]; loopTo: string } = [];
       
       switch (type) {
         case 'sorting': {
@@ -37,6 +37,56 @@ const InputArea: React.FC = () => {
           }
           break;
         }
+        case 'linkedStructures': {
+          if (!algorithm) {
+            throw new Error('Please select a specific linked list algorithm');
+          }
+        
+          // Parse differently based on the selected linked list algorithm
+          if (selectedAlgo === 'Cycle Detection') {
+            const [nodesPart, loopPart] = input.split('|').map(part => part.trim());
+        
+            if (!nodesPart || !loopPart) {
+              throw new Error('Enter nodes and loop info in the format: A, B, C | loop to B');
+            }
+        
+            const nodes = nodesPart
+              .split(/[,\s]+/)
+              .map(item => item.trim())
+              .filter(item => item.length > 0);
+        
+            if (nodes.length < 2) {
+              throw new Error('Enter at least 2 nodes for cycle detection');
+            }
+        
+            if (!loopPart.toLowerCase().startsWith('loop to')) {
+              throw new Error('Use format: A, B, C | loop to B');
+            }
+        
+            const loopTo = loopPart.replace(/loop to/i, '').trim();
+        
+            if (!nodes.includes(loopTo)) {
+              throw new Error(`Node "${loopTo}" not found in the list`);
+            }
+        
+            processedInput = { nodes, loopTo };
+          } else {
+            // Linked List Traversal or Doubly Linked List
+            const nodes = input
+              .split(/[,\s]+/)
+              .map(item => item.trim())
+              .filter(item => item.length > 0);
+        
+            if (nodes.length < 2) {
+              throw new Error('Please enter at least 2 nodes');
+            }
+        
+            processedInput = nodes;
+          }
+        
+          break;
+        }
+        
   
         case 'searching': {
           const [arrayInput, targetInput] = input.split('|').map(part => part.trim());
@@ -178,6 +228,22 @@ const InputArea: React.FC = () => {
         - Ensure there are no duplicate edges or self-loops.`;
       case 'linear':
         return 'Enter values separated by commas (e.g., A, B, C, D)';
+      case 'dynamic':
+        return 'Under development';
+      case 'backtracking':
+        return 'Under development';
+        case 'linkedStructures':
+          switch (algorithm) {
+            case 'Linked List Traversal':
+              return 'Enter values (e.g., A, B, C, D)';
+            case 'Doubly Linked List':
+              return 'Enter values (e.g., A, B, C, D)';
+            case 'Cycle Detection':
+              return 'Enter values and cycle (e.g., A, B, C, D, E | loop to B)';
+            default:
+              return 'Enter values (e.g., A, B, C, D)';
+          }
+        
       default:
         return 'Select an algorithm first';
     }
@@ -412,7 +478,8 @@ const InputArea: React.FC = () => {
             array: [...array],
             current: i,
             target,
-            found: array[i] === target
+            found: array[i] === target,
+            done: array[i] === target // Show completion message if found
           });
       
           if (array[i] === target) {
@@ -420,9 +487,20 @@ const InputArea: React.FC = () => {
           }
         }
       
+        // If not found, push final frame
+        if (!array.includes(target)) {
+          visualData.push({
+            array: [...array],
+            current: -1,
+            target,
+            found: false,
+            done: true
+          });
+        }
+      
         break;
       }
-
+      
       case 'Binary Search': {
         const { array, target } = data[0]; // Extract array and target from input
         pseudocode = [
@@ -440,11 +518,11 @@ const InputArea: React.FC = () => {
       
         let low = 0;
         let high = array.length - 1;
+        let found = false;
       
         while (low <= high) {
           const mid = Math.floor((low + high) / 2);
-        
-          visualData.push({
+          const frame = {
             array: [...array],
             low,
             high,
@@ -452,19 +530,18 @@ const InputArea: React.FC = () => {
             target,
             found: array[mid] === target,
             done: false
-          });
-        
+          };
+      
+          visualData.push(frame);
+      
           if (array[mid] === target) {
-            // Final frame indicating found
+            // Final frame indicating target is found
             visualData.push({
-              array: [...array],
-              low,
-              high,
-              mid,
-              target,
+              ...frame,
               found: true,
               done: true
             });
+            found = true;
             break;
           } else if (array[mid] < target) {
             low = mid + 1;
@@ -472,9 +549,8 @@ const InputArea: React.FC = () => {
             high = mid - 1;
           }
         }
-        
-        // If not found, push one final frame
-        if (low > high) {
+      
+        if (!found) {
           visualData.push({
             array: [...array],
             low,
@@ -484,10 +560,106 @@ const InputArea: React.FC = () => {
             found: false,
             done: true
           });
-        }        
+        }
       
         break;
       }
+
+      case 'Linked List Traversal': {
+        const values = data;
+        pseudocode = [
+          'Linked List Traversal:',
+          '1. Start from head node.',
+          '2. While current node is not null:',
+          '   a. Visit current node.',
+          '   b. Move to next node.'
+        ];
+      
+        let current = null;
+        let list: any[] = [];
+      
+        // Build linked list
+        values.forEach((val, idx) => {
+          const node = { value: val, next: null };
+          if (list.length > 0) list[list.length - 1].next = node;
+          list.push(node);
+        });
+      
+        current = list[0];
+        while (current) {
+          visualData.push({ list: [...list], current });
+          current = current.next;
+        }
+      
+        break;
+      }
+      
+      case 'Doubly Linked List': {
+        const values = data;
+        pseudocode = [
+          'Doubly Linked List Traversal:',
+          '1. Start from head node.',
+          '2. While current node is not null:',
+          '   a. Visit current node.',
+          '   b. Move to next (or previous) node.'
+        ];
+      
+        let current = null;
+        let list: any[] = [];
+      
+        // Build doubly linked list
+        values.forEach((val, idx) => {
+          const node = { value: val, next: null, prev: null };
+          if (list.length > 0) {
+            list[list.length - 1].next = node;
+            node.prev = list[list.length - 1];
+          }
+          list.push(node);
+        });
+      
+        current = list[0];
+        while (current) {
+          visualData.push({ list: [...list], current });
+          current = current.next;
+        }
+      
+        break;
+      }
+      
+      case 'Cycle Detection': {
+        const values = data;
+        pseudocode = [
+          "Cycle Detection (Floyd’s Algorithm):",
+          "1. Use two pointers: slow and fast.",
+          "2. Move slow by one step, fast by two steps.",
+          "3. If they meet, there's a cycle.",
+          "4. If fast reaches null, there's no cycle."
+        ];
+      
+        let list: any[] = [];
+        values.forEach(val => list.push({ value: val, next: null }));
+      
+        // Manually create a cycle for demonstration (optional)
+        list.forEach((node, i) => {
+          if (i < list.length - 1) node.next = list[i + 1];
+        });
+      
+        // Optional cycle
+        if (list.length > 2) list[list.length - 1].next = list[1];
+      
+        let slow = list[0];
+        let fast = list[0];
+      
+        while (fast && fast.next) {
+          slow = slow.next;
+          fast = fast.next.next;
+          visualData.push({ slow, fast, list: [...list] });
+          if (slow === fast) break;
+        }
+      
+        break;
+      }
+      
       
 
       case "Dijkstra's Algorithm": {
@@ -851,14 +1023,28 @@ const InputArea: React.FC = () => {
           'pop(): remove from top',
           'peek(): view top item'
         ];
-
+      
         let stack: string[] = [];
         operations.forEach(op => {
-          visualData.push({ stack: [...stack], current: op, operation: 'push' });
-          stack.push(op);
+          if (op === 'pop') {
+            const removed = stack.pop();
+            visualData.push({
+              stack: [...stack],
+              current: removed ?? '',
+              operation: 'pop'
+            });
+          } else {
+            visualData.push({
+              stack: [...stack],
+              current: op,
+              operation: 'push'
+            });
+            stack.push(op);
+          }
         });
         break;
       }
+      
 
       case 'Queue Operations': {
         const operations = [...data];
@@ -868,14 +1054,28 @@ const InputArea: React.FC = () => {
           'dequeue(): remove from front',
           'peek(): view front item'
         ];
-
+      
         let queue: string[] = [];
         operations.forEach(op => {
-          visualData.push({ queue: [...queue], current: op, operation: 'enqueue' });
-          queue.push(op);
+          if (op === 'dequeue') {
+            const removed = queue.shift();
+            visualData.push({
+              queue: [...queue],
+              current: removed ?? '',
+              operation: 'dequeue'
+            });
+          } else {
+            visualData.push({
+              queue: [...queue],
+              current: op,
+              operation: 'enqueue'
+            });
+            queue.push(op);
+          }
         });
         break;
       }
+      
     }
 
     useAlgorithmStore.setState({
@@ -901,6 +1101,7 @@ const InputArea: React.FC = () => {
         />
         <button
           onClick={processInput}
+          onTouchStart={processInput} 
           disabled={!type || !algorithm}
           className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-md transition duration-200"
         >

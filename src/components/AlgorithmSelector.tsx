@@ -8,6 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 const algorithms = {
   sorting: ['Bubble Sort', 'Quick Sort', 'Merge Sort', 'Insertion Sort', 'Selection Sort'],
   searching: ['Binary Search', 'Linear Search'],
+  linkedStructures: ['Linked List Traversal', 'Doubly Linked List', 'Cycle Detection'],
   dynamic: ['Fibonacci', 'Knapsack Problem'],
   backtracking: ['N-Queens Problem', 'Sudoku Solver'],
   pathfinding: ["Dijkstra's Algorithm"],

@@ -1,6 +1,7 @@
 import VisualizerWrapper from './components/VisualizerWrapper';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Analytics } from "@vercel/analytics/next"
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         draggable 
         pauseOnHover
       />
+      <Analytics />
     </>
   );
 }

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type AlgorithmType = 'sorting' | 'searching' | 'pathfinding' | 'tree' | 'graph' | 'linear';
+export type AlgorithmType = 'sorting' | 'searching' | 'pathfinding' | 'tree' | 'graph' | 'linear' | 'linkedStructures' | 'dynamic' | 'backtracking';
 export type AlgorithmSpeed = 'slow' | 'medium' | 'fast';
 
 export interface AlgorithmState {

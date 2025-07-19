@@ -16,6 +16,9 @@ const Canvas: React.FC = () => {
     path: '#34D399', // emerald-400
     text: '#F3F4F6', // gray-100
     notFound: 'red',
+    top: '#ffd700',    // yellow
+    front: '#90ee90',  // green
+    back: '#add8e6',   // blue
   };
 
   
@@ -83,7 +86,7 @@ const Canvas: React.FC = () => {
 
     switch (type) {
       case 'sorting':
-        drawSortingVisualization(ctx, frame);
+        drawSortingVisualization(ctx, frame, currentStep === visualData.length - 1);
         break;
       case 'searching':
         drawSearchingVisualization(ctx, frame);
@@ -100,10 +103,20 @@ const Canvas: React.FC = () => {
       case 'linear':
         drawLinearVisualization(ctx, frame);
         break;
+      case 'linkedStructures':
+        drawLinkedVisualization(ctx, frame);
+        break;
+      case 'dynamic':
+        
+        break;
+      case 'backtracking':
+        
+        break;
+      default:
     }
   };
 
-  const drawSortingVisualization = (ctx: CanvasRenderingContext2D, frame: any) => {
+  const drawSortingVisualization = (ctx: CanvasRenderingContext2D, frame: any, isFinalFrame: boolean) => {
     const { array, comparing = [], swapping = [] } = frame;
     const padding = 40;
     const availableWidth = ctx.canvas.width - 2 * padding;
@@ -129,11 +142,129 @@ const Canvas: React.FC = () => {
       ctx.textAlign = 'center';
       ctx.fillText(value.toString(), x + barWidth / 2, y - 5);
     });
+  
+    // ✅ Show completion message
+    if (isFinalFrame) {
+      ctx.fillStyle = '#00FF00'; // Bright green
+      ctx.font = 'bold 28px system-ui';
+      ctx.textAlign = 'center';
+      ctx.fillText('Array Sorted!!', ctx.canvas.width / 2, padding);
+    }
   };
   
 
+  const drawLinkedVisualization = (ctx: CanvasRenderingContext2D, frame: any) => {
+    const { type, nodes = [], currentIndex, slowIndex, fastIndex, loopTo } = frame;
+  
+    const boxWidth = 60;
+    const boxHeight = 40;
+    const spacing = 80;
+    const startX = 50;
+    const startY = 100;
+  
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.font = '16px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+  
+    nodes.forEach((value: string, index: number) => {
+      const x = startX + index * spacing;
+      const y = startY;
+  
+      // Box
+      ctx.beginPath();
+      ctx.rect(x, y, boxWidth, boxHeight);
+      ctx.strokeStyle = 'black';
+      ctx.stroke();
+      ctx.closePath();
+  
+      // Value
+      ctx.fillText(value, x + boxWidth / 2, y + boxHeight / 2);
+  
+      // Next arrow
+      if (index < nodes.length - 1 || (type === 'Cycle Detection' && index === nodes.length - 1 && typeof loopTo === 'number')) {
+        const arrowX = x + boxWidth;
+        const arrowY = y + boxHeight / 2;
+        ctx.beginPath();
+        ctx.moveTo(arrowX, arrowY);
+        ctx.lineTo(arrowX + 20, arrowY);
+        ctx.stroke();
+        ctx.closePath();
+  
+        // Arrowhead
+        ctx.beginPath();
+        ctx.moveTo(arrowX + 20, arrowY);
+        ctx.lineTo(arrowX + 15, arrowY - 5);
+        ctx.lineTo(arrowX + 15, arrowY + 5);
+        ctx.fill();
+        ctx.closePath();
+      }
+  
+      // Double arrow for doubly linked list
+      if (type === 'Doubly Linked List' && index > 0) {
+        const backArrowX = x;
+        const backArrowY = y + boxHeight / 2 + 10;
+        ctx.beginPath();
+        ctx.moveTo(backArrowX, backArrowY);
+        ctx.lineTo(backArrowX - 20, backArrowY);
+        ctx.stroke();
+        ctx.closePath();
+  
+        ctx.beginPath();
+        ctx.moveTo(backArrowX - 20, backArrowY);
+        ctx.lineTo(backArrowX - 15, backArrowY - 5);
+        ctx.lineTo(backArrowX - 15, backArrowY + 5);
+        ctx.fill();
+        ctx.closePath();
+      }
+  
+      // Current traversal highlight
+      if (index === currentIndex) {
+        ctx.strokeStyle = 'blue';
+        ctx.strokeRect(x - 2, y - 2, boxWidth + 4, boxHeight + 4);
+      }
+  
+      // Slow pointer (Cycle Detection)
+      if (type === 'Cycle Detection' && index === slowIndex) {
+        ctx.fillStyle = 'green';
+        ctx.fillText('S', x + boxWidth / 2, y - 15);
+        ctx.fillStyle = 'black';
+      }
+  
+      // Fast pointer (Cycle Detection)
+      if (type === 'Cycle Detection' && index === fastIndex) {
+        ctx.fillStyle = 'red';
+        ctx.fillText('F', x + boxWidth / 2, y - 30);
+        ctx.fillStyle = 'black';
+      }
+    });
+  
+    // Draw loop curve (Cycle Detection)
+    if (type === 'Cycle Detection' && typeof loopTo === 'number' && loopTo >= 0 && loopTo < nodes.length) {
+      const fromX = startX + (nodes.length - 1) * spacing + boxWidth;
+      const toX = startX + loopTo * spacing;
+      const controlY = startY + 100;
+      ctx.beginPath();
+      ctx.moveTo(fromX, startY + boxHeight / 2);
+      ctx.bezierCurveTo(fromX + 60, controlY, toX - 60, controlY, toX, startY + boxHeight / 2);
+      ctx.strokeStyle = 'orange';
+      ctx.stroke();
+      ctx.closePath();
+  
+      // Arrowhead at the end of loop
+      ctx.beginPath();
+      ctx.moveTo(toX, startY + boxHeight / 2);
+      ctx.lineTo(toX - 5, startY + boxHeight / 2 - 5);
+      ctx.lineTo(toX - 5, startY + boxHeight / 2 + 5);
+      ctx.fill();
+      ctx.closePath();
+    }
+  };
+  
+  
+
   const drawSearchingVisualization = (ctx: CanvasRenderingContext2D, frame: any) => {
-    const { array, current, target, found, low, high, mid, done } = frame;
+    const { array, current, target, found, low, high, mid, done, lastMid, lastDirection } = frame;
     const padding = 40;
     const availableWidth = ctx.canvas.width - 2 * padding;
     const availableHeight = ctx.canvas.height - 2 * padding;
@@ -152,11 +283,11 @@ const Canvas: React.FC = () => {
   
       if (low !== undefined && high !== undefined && mid !== undefined) {
         // Binary Search Visualization
-        if (index >= low && index <= high) ctx.fillStyle = colors.visited;       // Search range
-        if (index === mid) ctx.fillStyle = colors.current;                       // Mid index
+        if (index >= low && index <= high) ctx.fillStyle = colors.visited; // Search range
+        if (index === mid) ctx.fillStyle = colors.current; // Mid index
       } else if (current !== undefined) {
         // Linear Search Visualization
-        if (index === current) ctx.fillStyle = colors.current;                   // Currently checking
+        if (index === current) ctx.fillStyle = colors.current; // Currently checking
       }
   
       if (value === target && found) {
@@ -178,17 +309,45 @@ const Canvas: React.FC = () => {
     ctx.textAlign = 'center';
     ctx.fillText(`Target: ${target}`, ctx.canvas.width / 2, padding / 2);
   
-    // Show Result Text
+    // Show Result Text or Status
     if (done) {
       ctx.font = '20px system-ui';
       ctx.fillStyle = found ? colors.swapping : colors.notFound;
-      ctx.fillText(
-        found ? `🎯 Target Found: ${target}` : '❌ Target Not Found',
-        ctx.canvas.width / 2,
-        ctx.canvas.height - padding / 2
-      );
+  
+      if (low !== undefined && high !== undefined && mid !== undefined) {
+        // Binary Search Completion Message
+        ctx.fillText(
+          found ? `🎯 Target Found at index ${mid}` : '❌ Target Not Found in Binary Search',
+          ctx.canvas.width / 2,
+          ctx.canvas.height - padding / 2
+        );
+      } else {
+        // Linear Search Completion Message
+        ctx.fillText(
+          found ? `🎯 Target Found at index ${current}` : '❌ Target Not Found in Linear Search',
+          ctx.canvas.width / 2,
+          ctx.canvas.height - padding / 2
+        );
+      }
+    } else if (low !== undefined && high !== undefined && mid !== undefined) {
+      // Binary Search explanation during animation
+      ctx.font = '16px system-ui';
+      ctx.fillStyle = colors.text;
+      let explanation = '';
+  
+      if (array[mid] < target) {
+        explanation = `🔍 ${array[mid]} < ${target} → Going Right`;
+      } else if (array[mid] > target) {
+        explanation = `🔍 ${array[mid]} > ${target} → Going Left`;
+      } else {
+        explanation = `🎯 Found ${target} at index ${mid}`;
+      }
+  
+      ctx.fillText(explanation, ctx.canvas.width / 2, ctx.canvas.height - padding);
     }
   };
+  
+  
   
   
 
@@ -349,43 +508,107 @@ const Canvas: React.FC = () => {
 
   const drawLinearVisualization = (ctx: CanvasRenderingContext2D, frame: any) => {
     const { stack, queue, current, operation } = frame;
+    const isStack = !!stack;
     const data = stack || queue;
+  
     if (!data) return;
-
-    const itemWidth = 60;
+  
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  
+    const itemWidth = 80;
     const itemHeight = 40;
-    const padding = 20;
-    const startX = (ctx.canvas.width - itemWidth * data.length) / 2;
-    const startY = (ctx.canvas.height - itemHeight) / 2;
-
-    data.forEach((item: string, index: number) => {
-      const x = startX + index * itemWidth;
-      const y = startY;
-
-      // Draw item box
-      ctx.fillStyle = colors.default;
-      if (item === current) ctx.fillStyle = colors.current;
-      ctx.fillRect(x, y, itemWidth - 2, itemHeight);
-
-      // Draw item text
-      ctx.fillStyle = colors.text;
-      ctx.font = '14px system-ui';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(item.toString(), x + itemWidth / 2, y + itemHeight / 2);
-
-      // Draw operation indicator
-      if (item === current) {
-        ctx.fillStyle = operation === 'push' ? colors.comparing : colors.swapping;
-        ctx.beginPath();
-        ctx.moveTo(x + itemWidth / 2, y - 15);
-        ctx.lineTo(x + itemWidth / 2 - 10, y - 25);
-        ctx.lineTo(x + itemWidth / 2 + 10, y - 25);
-        ctx.closePath();
-        ctx.fill();
-      }
-    });
+    const padding = 10;
+  
+    const centerX = ctx.canvas.width / 2;
+    const centerY = ctx.canvas.height / 2;
+  
+    // Text at the top describing what's happening
+    ctx.fillStyle = colors.text;
+    ctx.font = '16px system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText(
+      isStack
+        ? `Operation: ${operation.toUpperCase()} ${current} on Stack`
+        : `Operation: ${operation.toUpperCase()} ${current} on Queue`,
+      centerX,
+      30
+    );
+  
+    if (isStack) {
+      // Stack (vertical layout)
+      const totalHeight = data.length * (itemHeight + padding);
+      const startY = centerY - totalHeight / 2;
+  
+      data.forEach((item: string, index: number) => {
+        const x = centerX - itemWidth / 2;
+        const y = startY + index * (itemHeight + padding);
+  
+        // Highlight top item
+        if (index === data.length - 1) {
+          ctx.fillStyle = colors.top || '#ffd700';
+          ctx.font = '14px system-ui';
+          ctx.fillText('Top', x - 30, y + itemHeight / 2);
+        }
+  
+        // Draw item
+        ctx.fillStyle = item === current ? colors.current : colors.default;
+        ctx.fillRect(x, y, itemWidth, itemHeight);
+  
+        // Text
+        ctx.fillStyle = colors.text;
+        ctx.font = '16px system-ui';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(item.toString(), x + itemWidth / 2, y + itemHeight / 2);
+      });
+  
+      // Draw base line
+      ctx.strokeStyle = '#ccc';
+      ctx.beginPath();
+      ctx.moveTo(centerX - itemWidth / 2 - 10, startY + data.length * (itemHeight + padding));
+      ctx.lineTo(centerX + itemWidth / 2 + 10, startY + data.length * (itemHeight + padding));
+      ctx.stroke();
+    } else {
+      // Queue (horizontal layout)
+      const totalWidth = data.length * (itemWidth + padding);
+      const startX = centerX - totalWidth / 2;
+  
+      data.forEach((item: string, index: number) => {
+        const x = startX + index * (itemWidth + padding);
+        const y = centerY;
+  
+        // Highlight front and back
+        if (index === 0) {
+          ctx.fillStyle = colors.front || '#90ee90';
+          ctx.font = '14px system-ui';
+          ctx.fillText('Front', x + itemWidth / 2, y - 20);
+        } else if (index === data.length - 1) {
+          ctx.fillStyle = colors.back || '#add8e6';
+          ctx.font = '14px system-ui';
+          ctx.fillText('Back', x + itemWidth / 2, y - 20);
+        }
+  
+        // Draw item
+        ctx.fillStyle = item === current ? colors.current : colors.default;
+        ctx.fillRect(x, y, itemWidth, itemHeight);
+  
+        // Text
+        ctx.fillStyle = colors.text;
+        ctx.font = '16px system-ui';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(item.toString(), x + itemWidth / 2, y + itemHeight / 2);
+      });
+  
+      // Draw base line
+      ctx.strokeStyle = '#ccc';
+      ctx.beginPath();
+      ctx.moveTo(startX - 10, centerY + itemHeight + 10);
+      ctx.lineTo(startX + totalWidth + 10, centerY + itemHeight + 10);
+      ctx.stroke();
+    }
   };
+  
 
   return (
     <div className="bg-blue-600 rounded-lg p-2 shadow-lg">

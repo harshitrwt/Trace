@@ -7,9 +7,9 @@ import { useAlgorithmStore } from '../store/algorithmStore';
 import type { AlgorithmSpeed } from '../types/algorithms';
 
 const SPEED_MAP: Record<AlgorithmSpeed, number> = {
-  slow: 1000,   // 1 second per step
-  medium: 500,  // 0.5 second
-  fast: 200,    // 0.2 second
+  slow: 1000,   
+  medium: 500,  
+  fast: 200,    
 };
 
 const ControlPanel: React.FC = () => {
