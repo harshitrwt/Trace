@@ -76,7 +76,7 @@ const AlgorithmSelector: React.FC = () => {
         ))}
       </div>
 
-      {/* Small screens: collapsible accordions */}
+     
       <div className="sm:hidden space-y-2">
         {Object.entries(algorithms).map(([type, algs]) => (
           <div key={type} className="bg-gray-700 rounded-md">

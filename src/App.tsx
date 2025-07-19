@@ -1,9 +1,14 @@
+import { useEffect } from 'react';
+import { inject } from '@vercel/analytics';
 import VisualizerWrapper from './components/VisualizerWrapper';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Analytics } from "@vercel/analytics/next"
 
 function App() {
+  useEffect(() => {
+    inject(); // ✅ Start analytics tracking
+  }, []);
+
   return (
     <>
       <VisualizerWrapper />
@@ -18,9 +23,9 @@ function App() {
         draggable 
         pauseOnHover
       />
-      <Analytics />
     </>
   );
 }
 
 export default App;
+
